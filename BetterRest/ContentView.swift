@@ -5,12 +5,17 @@
 //  Created by Aditya Vyavahare on 24/05/24.
 //
 
+import CoreML
 import SwiftUI
 
 struct ContentView: View {
     @State private var wakeUpTime = Date.now
     @State private var sleepAmount = 8.0
     @State private var coffeeCups = 1
+    
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
+    @State private var showAlert = false
     
     var body: some View {
         NavigationStack {
@@ -39,11 +44,36 @@ struct ContentView: View {
             .toolbar {
                 Button("Calculate", action: calculateSleepTime)
             }
+            .alert(alertTitle, isPresented: $showAlert) {
+                Button("Okay") {}
+            } message: {
+                Text(alertMessage)
+            }
         }
     }
     
     private func calculateSleepTime() {
-        
+        do {
+            let config = MLModelConfiguration()
+            let model = try SleepCalculator(configuration: config)
+            
+            let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: wakeUpTime)
+            let hour = (dateComponents.hour ?? 0) * 60 * 60 //hour -> minute -> second
+            let minute = (dateComponents.minute ?? 0) * 60 //minute -> second
+            
+            let sleepPrediction = try model.prediction(wake: Int64((hour + minute)), estimatedSleep: sleepAmount, coffee: Int64(coffeeCups))
+            let sleepTime = wakeUpTime - sleepPrediction.actualSleep
+            
+            alertTitle = "Your sleep time is..."
+            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+        } catch {
+            alertTitle = "Error!"
+            alertMessage = """
+                There was an error calculating your sleep time.
+                Try again!
+            """
+        }
+        showAlert = true
     }
 }
 

@@ -25,25 +25,27 @@ struct ContentView: View {
     }
     var body: some View {
         NavigationStack {
-            VStack {
-                Spacer()
-                Spacer()
-                Spacer()
-                Text("When do you want to wake up?")
-                    .font(.headline)
-                DatePicker("Pick a wake up time...", selection: $wakeUpTime, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
-                Spacer()
-                Text("How many hours do you desire to sleep?")
-                    .font(.headline)
-                Stepper("Sleep amount: \(sleepAmount.formatted()) hrs.", value: $sleepAmount, in: 4...12, step: 0.25)
-                Spacer()
-                Text("How may cups of coffee do you drink?")
-                    .font(.headline)
-                Stepper("\(coffeeCups) cups(s)", value: $coffeeCups, in: 1...20, step: 1)
-                Spacer()
-                Spacer()
-                Spacer()
+            Form {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("When do you want to wake up?")
+                        .font(.headline)
+                    DatePicker("Pick a wake up time...", selection: $wakeUpTime, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                }
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("How many hours do you desire to sleep?")
+                        .font(.headline)
+                    Stepper("\(sleepAmount.formatted()) hrs.", value: $sleepAmount, in: 4...12, step: 0.25)
+                }
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("How may cups of coffee do you drink?")
+                        .font(.headline)
+//                    Stepper(coffeeCups == 1 ?"\(coffeeCups) cup" : "\(coffeeCups) cups", value: $coffeeCups, in: 1...20, step: 1)   //implementing ternary operator
+                    ///alternative way of pluralizing
+                    Stepper("^[\(coffeeCups) cup](inflect: true)", value: $coffeeCups, in: 1...20, step: 1)
+                    //^[...] is a special syntax for localized formatting with inflection, meaning it will correctly handle pluralization.
+                    //inflect: true ensures that the text is pluralized correctly based on the value of coffeeCups.
+                }
             }
             .padding()
             .navigationTitle("BetterRest")
